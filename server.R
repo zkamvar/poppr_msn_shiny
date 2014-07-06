@@ -25,7 +25,7 @@ shinyServer(function(input, output) {
   minspan <- reactive({
     indist <- input$distance
     switch(indist,
-      "dissimilarity" = indist <- "diss.dist",
+      "Dissimilarity" = indist <- "diss.dist",
       "Bruvo" = indist <- "bruvo.dist",
       "Nei" = indist <- "nei.dist",
       "Rogers" = indist <- "rogers.dist",
@@ -39,14 +39,44 @@ shinyServer(function(input, output) {
     } else {
       if (indist == "diss.dist"){
         DIST <- function(x) diss.dist(x, percent = FALSE)
+        dist <- DIST(dataset())
+      } else {
+        dat  <- missingno(dataset(), "mean")
+        dist <- DIST(dat)
       }
-      dist <- DIST(dataset())
       out <- poppr.msn(dataset(), dist, showplot = FALSE)
     }
     return(out)
 
   })
 
+  slide <- reactive({
+    input$greyslide
+  })
+  
+  seed <- reactive({
+    input$seed
+  })
+
+  inds <- reactive({
+    return(strsplit(input$inds, "[[:blank:]]")[[1]])
+  })
+  
+  usrPal <- reactive({
+    input$pal
+  })
+  
+  cutoff <- reactive({
+    cutoff <- as.numeric(input$cutoff)
+    if (is.na(cutoff)) cutoff <- NULL
+    cutoff
+  })
+  
+  cmd <- reactive({
+    dat <- input$dataset
+    paste0("plot_poppr_msn(", dat, ", ", input$distance, "(", dat, "), ", ind = input$inds,", gadj = ", 
+      input$slide,", palette = ",input$pal,", cutoff = ",input$cutoff,", quantiles = FALSE",")")
+  })
 
   output$summary <- renderPrint({
     dat <- dataset()
@@ -54,7 +84,14 @@ shinyServer(function(input, output) {
   })
 
   output$plot <- renderPlot({
-    plot_poppr_msn(dataset(), minspan(), ind = "none")
+    set.seed(seed())
+    plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), palette = usrPal(), 
+                   cutoff = cutoff(), quantiles = FALSE)
+  })
+  
+  output$cmd <- renderPrint({
+    cat(paste0("set.seed(", seed(),")\n"))
+    cat(paste0("plot_poppr_msn(", input$dataset, ")"))
   })
 
 })
