@@ -98,20 +98,19 @@ shinyServer(function(input, output) {
     distfunk <- distfun()
     closer   <- ")"
     if (distfunk == "diss.dist"){
-      distfunk <- paste0("poppr.msn(", distfunk)
+      distfunk <- paste0("poppr.msn(", dat, ", ", distfunk)
       closer   <- ", percent = FALSE))"
-    }
-    else if (distfunk == "bruvo.dist"){
+    } else if (distfunk == "bruvo.dist"){
       distfunk <- "bruvo.msn"
     } else { 
-      distfunk <- paste0("poppr.msn(", distfunk, "(missingno")
+      distfunk <- paste0("poppr.msn(", dat, ", ", distfunk, "(missingno")
       closer   <- paste0(", type = 'mean')", closer, ")")
     }
     return(paste0(distfunk, "(", dat, closer))
   })
   
   cmd <- reactive({
-    dat      <- input$dataset
+    dat <- input$dataset
     paste0("plot_poppr_msn(", dat, 
            ",\n\t       min_span_net", 
            ",\n\t       inds = ", make_dput(inds()), 
@@ -129,7 +128,7 @@ shinyServer(function(input, output) {
   output$plot <- renderPlot({
     set.seed(seed())
     plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), palette = usrPal(), 
-                   cutoff = cutoff(), quantiles = FALSE)
+                   cutoff = cutoff(), quantiles = FALSE, beforecut = TRUE)
   })
   
   output$cmd <- renderPrint({
