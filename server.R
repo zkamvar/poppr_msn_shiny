@@ -26,8 +26,10 @@ make_dput <- function(x){
     x <- paste0("c(\"",paste0(x, collapse = "\", \""),"\")")
   } else if (length(x) > 0){
     x <- paste0("\"", x, "\"")
-  } else {
+  } else if (is.null(x)){
     x <- "NULL"
+  } else {
+    x <- "\"\""
   }
   return(x)
 }
@@ -96,15 +98,15 @@ shinyServer(function(input, output) {
   distcmd <- reactive({
     dat <- input$dataset
     distfunk <- distfun()
-    closer   <- ")"
+    closer   <- "showplot = FALSE)"
     if (distfunk == "diss.dist"){
       distfunk <- paste0("poppr.msn(", dat, ", ", distfunk)
-      closer   <- ", percent = FALSE))"
+      closer   <- ", percent = FALSE), showplot = FALSE)"
     } else if (distfunk == "bruvo.dist"){
       distfunk <- "bruvo.msn"
     } else { 
       distfunk <- paste0("poppr.msn(", dat, ", ", distfunk, "(missingno")
-      closer   <- paste0(", type = 'mean')", closer, ")")
+      closer   <- paste0(", type = 'mean')", ")", closer)
     }
     return(paste0(distfunk, "(", dat, closer))
   })
@@ -116,8 +118,13 @@ shinyServer(function(input, output) {
            ",\n\t       inds = ", make_dput(inds()), 
            ",\n\t       gadj = ", input$greyslide,
            ",\n\t       palette = ", make_dput(input$pal),
-           ",\n\t       cutoff = ", input$cutoff,
-           ",\n\t       quantiles = FALSE",")")
+           ",\n\t       cutoff = ", ifelse(is.null(cutoff()), "NULL", cutoff()),
+           ",\n\t       quantiles = FALSE",
+           ",\n\t       beforecut = ", bcut(), ")")
+  })
+
+  bcut <- reactive({
+    input$beforecut
   })
 
   output$summary <- renderPrint({
@@ -128,7 +135,7 @@ shinyServer(function(input, output) {
   output$plot <- renderPlot({
     set.seed(seed())
     plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), palette = usrPal(), 
-                   cutoff = cutoff(), quantiles = FALSE, beforecut = TRUE)
+                   cutoff = cutoff(), quantiles = FALSE, beforecut = bcut())
   })
   
   output$cmd <- renderPrint({

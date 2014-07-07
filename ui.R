@@ -67,7 +67,8 @@ shinyUI(fluidPage(
                      "Distance Cutoff",
                      NULL,
                      step = 0.001)
-        )
+      ),
+      checkboxInput("beforecut", "Keep graph position", TRUE)
     ),
 
 
