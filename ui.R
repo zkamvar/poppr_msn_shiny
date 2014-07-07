@@ -73,8 +73,9 @@ shinyUI(fluidPage(
 
     mainPanel(
       tabsetPanel(
-          tabPanel("Plot", plotOutput("plot"), verbatimTextOutput("cmd")),
-          tabPanel("Summary", verbatimTextOutput("summary"))
+          tabPanel("Plot", plotOutput("plot")),
+          tabPanel("Data", verbatimTextOutput("summary")),
+          tabPanel("Command", verbatimTextOutput("cmd"))
         )
     )
   )

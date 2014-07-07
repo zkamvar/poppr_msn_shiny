@@ -21,6 +21,17 @@ get_dist <- function(indist){
   return(indist)
 }
 
+make_dput <- function(x){
+  if (length(x) > 1){
+    x <- paste0("c(\"",paste0(x, collapse = "\", \""),"\")")
+  } else if (length(x) > 0){
+    x <- paste0("\"", x, "\"")
+  } else {
+    x <- "NULL"
+  }
+  return(x)
+}
+
 shinyServer(function(input, output) {
   
   dataset <- reactive({
@@ -78,6 +89,7 @@ shinyServer(function(input, output) {
   cutoff <- reactive({
     cutoff <- as.numeric(input$cutoff)
     if (is.na(cutoff)) cutoff <- NULL
+    print(cutoff)
     cutoff
   })
   
@@ -102,10 +114,10 @@ shinyServer(function(input, output) {
     dat      <- input$dataset
     paste0("plot_poppr_msn(", dat, 
            ",\n\t       min_span_net", 
-           ",\n\t       inds = ", input$inds, 
+           ",\n\t       inds = ", make_dput(inds()), 
            ",\n\t       gadj = ", input$greyslide,
-           ",\n\t       palette = ",input$pal,
-           ",\n\t       cutoff = ",input$cutoff,
+           ",\n\t       palette = ", make_dput(input$pal),
+           ",\n\t       cutoff = ", input$cutoff,
            ",\n\t       quantiles = FALSE",")")
   })
 
@@ -121,8 +133,8 @@ shinyServer(function(input, output) {
   })
   
   output$cmd <- renderPrint({
-    cat(paste0("set.seed(", seed(),")\n"))
     cat(paste0("min_span_net <- ", distcmd(), "\n"))
+    cat(paste0("set.seed(", seed(),")\n"))
     cat(cmd())
   })
 
