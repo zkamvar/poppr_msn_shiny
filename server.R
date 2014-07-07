@@ -8,6 +8,19 @@
 library(shiny)
 library(poppr)
 
+get_dist <- function(indist){
+  indist <- switch(indist,
+      Dissimilarity = "diss.dist",
+      Bruvo         = "bruvo.dist",
+      Nei           = "nei.dist",
+      Rogers        = "rogers.dist",
+      Edwards       = "edwards.dist",
+      Provesti      = "provesti.dist",
+      Reynolds      = "reynolds.dist"
+  )
+  return(indist)
+}
+
 shinyServer(function(input, output) {
   
   dataset <- reactive({
@@ -22,18 +35,14 @@ shinyServer(function(input, output) {
     return(dat)
   })
 
+  distfun <- reactive({ 
+    get_dist(input$distance) 
+  })
+
+
   minspan <- reactive({
-    indist <- input$distance
-    switch(indist,
-      "Dissimilarity" = indist <- "diss.dist",
-      "Bruvo" = indist <- "bruvo.dist",
-      "Nei" = indist <- "nei.dist",
-      "Rogers" = indist <- "rogers.dist",
-      "Edwards" = indist <- "edwards.dist",
-      "Provesti" = indist <- "provesti.dist",
-      "Reynolds" = indist <- "reynolds.dist"
-      )
-    DIST <- match.fun(indist)
+    indist <- distfun()
+    DIST   <- match.fun(indist)
     if (indist == "bruvo.dist"){
       out <- bruvo.msn(dataset(), showplot = FALSE)
     } else {
@@ -72,10 +81,32 @@ shinyServer(function(input, output) {
     cutoff
   })
   
-  cmd <- reactive({
+  distcmd <- reactive({
     dat <- input$dataset
-    paste0("plot_poppr_msn(", dat, ", ", input$distance, "(", dat, "), ", ind = input$inds,", gadj = ", 
-      input$slide,", palette = ",input$pal,", cutoff = ",input$cutoff,", quantiles = FALSE",")")
+    distfunk <- distfun()
+    closer   <- ")"
+    if (distfunk == "diss.dist"){
+      distfunk <- paste0("poppr.msn(", distfunk)
+      closer   <- ", percent = FALSE))"
+    }
+    else if (distfunk == "bruvo.dist"){
+      distfunk <- "bruvo.msn"
+    } else { 
+      distfunk <- paste0("poppr.msn(", distfunk, "(missingno")
+      closer   <- paste0(", type = 'mean')", closer, ")")
+    }
+    return(paste0(distfunk, "(", dat, closer))
+  })
+  
+  cmd <- reactive({
+    dat      <- input$dataset
+    paste0("plot_poppr_msn(", dat, 
+           ",\n\t       min_span_net", 
+           ",\n\t       inds = ", input$inds, 
+           ",\n\t       gadj = ", input$greyslide,
+           ",\n\t       palette = ",input$pal,
+           ",\n\t       cutoff = ",input$cutoff,
+           ",\n\t       quantiles = FALSE",")")
   })
 
   output$summary <- renderPrint({
@@ -91,7 +122,8 @@ shinyServer(function(input, output) {
   
   output$cmd <- renderPrint({
     cat(paste0("set.seed(", seed(),")\n"))
-    cat(paste0("plot_poppr_msn(", input$dataset, ")"))
+    cat(paste0("min_span_net <- ", distcmd(), "\n"))
+    cat(cmd())
   })
 
 })
