@@ -29,6 +29,7 @@ shinyUI(fluidPage(
                               "Provesti",
                               "Reynolds")
       ),
+      checkboxInput("reticulate", "include reticulations?", FALSE), 
       sliderInput("greyslide",
                   "Adjust Grey Scale",
                   min = 0,

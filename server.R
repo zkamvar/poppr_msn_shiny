@@ -52,12 +52,15 @@ shinyServer(function(input, output) {
     get_dist(input$distance) 
   })
 
-
+  reticulation <- reactive({
+    input$reticulate
+  })
   minspan <- reactive({
     indist <- distfun()
+    ret    <- reticulation()
     DIST   <- match.fun(indist)
     if (indist == "bruvo.dist"){
-      out <- bruvo.msn(dataset(), showplot = FALSE)
+      out <- bruvo.msn(dataset(), showplot = FALSE, include.ties = ret)
     } else {
       if (indist == "diss.dist"){
         DIST <- function(x) diss.dist(x, percent = FALSE)
@@ -66,7 +69,7 @@ shinyServer(function(input, output) {
         dat  <- missingno(dataset(), "mean")
         dist <- DIST(dat)
       }
-      out <- poppr.msn(dataset(), dist, showplot = FALSE)
+      out <- poppr.msn(dataset(), dist, showplot = FALSE, include.ties = ret)
     }
     return(out)
 
