@@ -10,15 +10,20 @@ shinyUI(fluidPage(
     sidebarPanel(
       selectInput("dataset", 
                   "choose dataset",
-                  choices = c("Pinf",
+                  choices = c("<choose>",
+                              "Pinf",
                               "partial_clone", 
                               "Aeut", 
                               "nancycats", 
                               "microbov",
-                              "H3N2")
+                              "H3N2"),
+                  selected = "<choose>"
       ),
+      textInput("userdata",
+                "OR enter the name of your data",
+                NULL),
       checkboxInput("genclone", "convert to genclone?", TRUE),
-      
+      actionButton("action", "Go!"),
       selectInput("distance", 
                   "choose distance calculation", 
                   choices = c("Dissimilarity",
@@ -29,7 +34,7 @@ shinyUI(fluidPage(
                               "Provesti",
                               "Reynolds")
       ),
-      checkboxInput("reticulate", "include reticulations?", FALSE), 
+      checkboxInput("reticulate", "include reticulations?", TRUE), 
       sliderInput("greyslide",
                   "Adjust Grey Scale",
                   min = 0,
@@ -75,7 +80,7 @@ shinyUI(fluidPage(
 
     mainPanel(
       tabsetPanel(
-          tabPanel("Plot", plotOutput("plot")),
+          tabPanel("Plot", plotOutput("plot", height = '600px')),
           tabPanel("Data", verbatimTextOutput("summary")),
           tabPanel("Command", verbatimTextOutput("cmd"))
         )

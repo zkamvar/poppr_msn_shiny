@@ -22,6 +22,7 @@ get_dist <- function(indist){
 }
 
 make_dput <- function(x){
+  return(capture.output(dput(x)))
   if (length(x) > 1){
     x <- paste0("c(\"",paste0(x, collapse = "\", \""),"\")")
   } else if (length(x) > 0){
@@ -37,13 +38,18 @@ make_dput <- function(x){
 shinyServer(function(input, output) {
   
   dataset <- reactive({
-    if (input$dataset == "microbov") data("microbov", package="adegenet")
-    if (input$dataset == "nancycats") data("nancycats", package="adegenet")
-    if (input$dataset == "H3N2") data("H3N2", package="adegenet")
-    if (input$dataset == "partial_clone") data("partial_clone", package="poppr")
-    if (input$dataset == "Aeut") data("Aeut", package="poppr")
-    if (input$dataset == "Pinf") data("Pinf", package="poppr")
-    dat <- get(input$dataset)
+    input$action
+    if (is.null(input$userdata) || input$userdata == ""){
+      if (input$dataset == "microbov") data("microbov", package="adegenet")
+      if (input$dataset == "nancycats") data("nancycats", package="adegenet")
+      if (input$dataset == "H3N2") data("H3N2", package="adegenet")
+      if (input$dataset == "partial_clone") data("partial_clone", package="poppr")
+      if (input$dataset == "Aeut") data("Aeut", package="poppr")
+      if (input$dataset == "Pinf") data("Pinf", package="poppr")
+      dat <- get(input$dataset)      
+    } else {
+      dat <- get(input$userdata, envir = .GlobalEnv)
+    }
     if (input$genclone) dat <- as.genclone(dat)
     return(dat)
   })
