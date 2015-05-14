@@ -58,7 +58,6 @@ shinyServer(function(input, output, session) {
   })
   
   dataset <- reactive({
-    print(input$dataset)
     if (!is.null(input$dataset) && !grepl("<choose>", input$dataset)){
       if(grepl("Example: ", input$dataset)){
         env <- new.env()
@@ -94,7 +93,6 @@ shinyServer(function(input, output, session) {
 
   
   dataname <- reactive({
-    print(input$dataset)
     if (!grepl("<choose>", input$dataset)){
       if(grepl("Example: ", input$dataset)){
         dat <- substr(input$dataset, start = 10, stop = nchar(input$dataset))
@@ -131,8 +129,6 @@ shinyServer(function(input, output, session) {
     indist <- distfun()
     ret    <- reticulation()
     args   <- distargs()
-    
-    print(distfun)
     if (indist == "bruvo.dist"){
       fun <- paste0("bruvo.msn(dataset(), ", args, ", showplot = FALSE, include.ties = ret)")
       out <- eval(parse(text = fun))
@@ -142,7 +138,6 @@ shinyServer(function(input, output, session) {
       } else {
         dat <- dataset()
       }
-      print(args)
       if (length(args) == 1 && args == ""){
         fun <- paste0(indist, "(dat)")
       } else {
@@ -183,24 +178,28 @@ shinyServer(function(input, output, session) {
   cutoff <- reactive({
     cutoff <- as.numeric(input$cutoff)
     if (is.na(cutoff)) cutoff <- NULL
-    print(cutoff)
     cutoff
   })
   
   distcmd <- reactive({
-    dat <- dataname()
+    dat      <- dataname()
     distfunk <- distfun()
-    closer   <- "showplot = FALSE)"
-    if (distfunk == "diss.dist"){
-      distfunk <- paste0("poppr.msn(", dat, ", ", distfunk)
-      closer   <- ", percent = FALSE), showplot = FALSE)"
-    } else if (distfunk == "bruvo.dist"){
+    args     <- distargs()
+    closer   <- paste0("showplot = FALSE, include.ties = ", reticulation(), ")")
+
+    if (distfunk == "bruvo.dist"){
       distfunk <- "bruvo.msn"
+      closer <- paste0(args, ", ", closer)
+      return_cmd <- paste0(distfunk, "(", dat, closer)
     } else { 
-      distfunk <- paste0("poppr.msn(", dat, ", ", distfunk, "(missingno")
-      closer   <- paste0(", type = 'mean')", ")", closer)
+      missfunk <- paste0("missingno(", dat, ", type = 'mean')\n")
+      distfunk <- paste0(distfunk, "(", dat, "_nomiss, ", args, ")\n")
+      msnfunk <- paste0("poppr.msn(", dat, ", ", dat, "_dist, ", closer, "\n")
+      return_cmd <- paste0(dat, "_nomiss <- ", missfunk, 
+                           dat, "_dist <- ", distfunk,
+                           "min_span_net <- ", msnfunk)
     }
-    return(paste0(distfunk, "(", dat, closer))
+    return(return_cmd)
   })
   
   cmd <- reactive({
@@ -226,13 +225,13 @@ shinyServer(function(input, output, session) {
 
   output$plot <- renderPlot({
     set.seed(seed())
-    plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), palette = usrPal(), 
-                   cutoff = cutoff(), quantiles = FALSE, beforecut = bcut(), 
-                   nodebase = nodebase())
+    plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), 
+                   palette = usrPal(), cutoff = cutoff(), quantiles = FALSE, 
+                   beforecut = bcut(), nodebase = nodebase())
   })
   
   output$cmd <- renderPrint({
-    cat(paste0("min_span_net <- ", distcmd(), "\n"))
+    cat(paste0(distcmd(), "\n"))
     cat(paste0("set.seed(", seed(),")\n"))
     cat(cmd())
   })
