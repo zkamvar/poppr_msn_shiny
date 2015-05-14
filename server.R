@@ -186,16 +186,23 @@ shinyServer(function(input, output, session) {
     distfunk <- distfun()
     args     <- distargs()
     closer   <- paste0("showplot = FALSE, include.ties = ", reticulation(), ")")
-
+    has_no_args <- length(args) == 1 && args == ""
     if (distfunk == "bruvo.dist"){
       distfunk <- "bruvo.msn"
-      closer <- paste0(args, ", ", closer)
+      closer <- paste0(", ", args, ", ", closer)
       return_cmd <- paste0(distfunk, "(", dat, closer)
     } else { 
-      missfunk <- paste0("missingno(", dat, ", type = 'mean')\n")
-      distfunk <- paste0(distfunk, "(", dat, "_nomiss, ", args, ")\n")
+      if (distfunk == "diss.dist"){
+        missfunk <- character(0)
+        distfunk <- paste0(distfunk, "(", dat, ", ", args, ")\n")        
+      } else {
+        missfunk <- paste0(dat, "_nomiss <- ", "missingno(", dat, 
+                           ", type = 'mean')\n")
+        args <- ifelse(has_no_args, "", paste0(", ", args))
+        distfunk <- paste0(distfunk, "(", dat, "_nomiss", args, ")\n")        
+      }
       msnfunk <- paste0("poppr.msn(", dat, ", ", dat, "_dist, ", closer, "\n")
-      return_cmd <- paste0(dat, "_nomiss <- ", missfunk, 
+      return_cmd <- paste0(missfunk, 
                            dat, "_dist <- ", distfunk,
                            "min_span_net <- ", msnfunk)
     }
@@ -208,6 +215,7 @@ shinyServer(function(input, output, session) {
            ",\n\t       min_span_net", 
            ",\n\t       inds = ", make_dput(inds()), 
            ",\n\t       gadj = ", input$greyslide,
+           ",\n\t       nodebase = ", input$nodebase,
            ",\n\t       palette = ", make_dput(input$pal),
            ",\n\t       cutoff = ", ifelse(is.null(cutoff()), "NULL", cutoff()),
            ",\n\t       quantiles = FALSE",
