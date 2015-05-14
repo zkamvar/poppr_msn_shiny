@@ -197,9 +197,22 @@ shinyServer(function(input, output, session) {
     isolate({
       input$pal      
     })
-
   })
   
+  popLeg <- reactive({
+    input$submit
+    isolate({
+      input$pop.leg
+    })
+  })
+
+  scaleLeg <- reactive({
+    input$submit
+    isolate({
+      input$scale.leg
+    })
+  })
+
   cutoff <- reactive({
     input$submit
     isolate({
@@ -272,7 +285,8 @@ shinyServer(function(input, output, session) {
       set.seed(seed())
       plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), 
                      palette = usrPal(), cutoff = cutoff(), quantiles = FALSE, 
-                     beforecut = bcut(), nodebase = nodebase())      
+                     beforecut = bcut(), nodebase = nodebase(), 
+                     pop.leg = popLeg(), scale.leg = scaleLeg())      
     }
   })
   

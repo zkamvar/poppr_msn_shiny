@@ -24,6 +24,8 @@ shinyUI(fluidPage(
       uiOutput("distargsUI"),
 #      actionButton("submit", "Make My Graph!", icon("check-circle")),
       checkboxInput("reticulate", "include reticulations?", TRUE), 
+      checkboxInput("pop.leg", "population legend", TRUE), 
+      checkboxInput("scale.leg", "scale bar", TRUE), 
       sliderInput("greyslide",
                   "Grey Scale",
                   min = 0,
