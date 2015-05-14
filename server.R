@@ -23,48 +23,116 @@ get_dist <- function(indist){
 
 make_dput <- function(x){
   return(capture.output(dput(x)))
-  if (length(x) > 1){
-    x <- paste0("c(\"",paste0(x, collapse = "\", \""),"\")")
-  } else if (length(x) > 0){
-    x <- paste0("\"", x, "\"")
-  } else if (is.null(x)){
-    x <- "NULL"
-  } else {
-    x <- "\"\""
-  }
-  return(x)
 }
 
-shinyServer(function(input, output) {
+is_usable <- function(object, objclass = c("genind", "genclone")){
+  any(objclass %in% class(get(object, .GlobalEnv)))
+}
+
+
+get_globals <- function(objclass = c("genind", "genclone")){
+  myobjs <- ls(envir = .GlobalEnv)
+  if (length(myobjs) == 0) return(myobjs)
+  gens <- vapply(myobjs, FUN = is_usable, FUN.VALUE = logical(1), objclass)
+  myobjs[gens]
+}
+
+
+globals <- get_globals()
+
+shinyServer(function(input, output, session) {
+  
+  # Module to add the user's global environment. 
+  output$selectUI <- renderUI({
+    selectInput("dataset", 
+                "choose dataset",
+                choices = c("Example: Pinf",
+                            "Example: partial_clone",
+                            "Example: Aeut",
+                            "Example: nancycats",
+                            "Example: microbov",
+                            "Example: H3N2",
+                            globals),
+                selected = "Example: partial_clone"
+    )
+  })
   
   dataset <- reactive({
-    input$action
-    if (is.null(input$userdata) || input$userdata == ""){
-      if (input$dataset == "microbov") data("microbov", package="adegenet")
-      if (input$dataset == "nancycats") data("nancycats", package="adegenet")
-      if (input$dataset == "H3N2") data("H3N2", package="adegenet")
-      if (input$dataset == "partial_clone") data("partial_clone", package="poppr")
-      if (input$dataset == "Aeut") data("Aeut", package="poppr")
-      if (input$dataset == "Pinf") data("Pinf", package="poppr")
-      dat <- get(input$dataset)      
+    print(input$dataset)
+    if (!is.null(input$dataset) && !grepl("<choose>", input$dataset)){
+      if(grepl("Example: ", input$dataset)){
+        env <- new.env()
+        if (input$dataset == "Example: microbov"){ 
+          data("microbov", package="adegenet", envir = env) 
+        }
+        else if (input$dataset == "Example: nancycats"){ 
+          data("nancycats", package="adegenet", envir = env) 
+        }
+        else if (input$dataset == "Example: H3N2"){ 
+          data("H3N2", package="adegenet", envir = env) 
+        }
+        else if (input$dataset == "Example: partial_clone"){ 
+          data("partial_clone", package="poppr", envir = env) 
+        }
+        else if (input$dataset == "Example: Aeut"){ 
+          data("Aeut", package="poppr", envir = env) 
+        }
+        else if (input$dataset == "Example: Pinf"){ 
+          data("Pinf", package="poppr", envir = env) 
+        }
+        exam <- substr(input$dataset, start = 10, stop = nchar(input$dataset))
+        dat <- get(exam, envir = env)
+      } else {
+        dat <- get(input$dataset, envir = .GlobalEnv)
+      }
     } else {
-      dat <- get(input$userdata, envir = .GlobalEnv)
+      dat <- new("genind")
     }
     if (input$genclone) dat <- as.genclone(dat)
     return(dat)
   })
 
+  
+  dataname <- reactive({
+    print(input$dataset)
+    if (!grepl("<choose>", input$dataset)){
+      if(grepl("Example: ", input$dataset)){
+        dat <- substr(input$dataset, start = 10, stop = nchar(input$dataset))
+      } else {
+        dat <- input$dataset
+      }
+    } else {
+      dat <- "no data"
+    }
+    return(dat)
+  })
+  
   distfun <- reactive({ 
     get_dist(input$distance) 
   })
 
+  output$distargsUI <- renderUI({
+    the_args <- formals(distfun())[-1]
+    the_args <- paste(names(the_args), unlist(the_args), sep = " = ", 
+                      collapse = ", ")
+    textInput("distargs", label = "Distance arguments", the_args)
+  })
   reticulation <- reactive({
     input$reticulate
   })
+  
+  
+  distargs <- reactive({
+    input$distargs
+  })
+  
   minspan <- reactive({
     indist <- distfun()
     ret    <- reticulation()
+    args   <- distargs()
     DIST   <- match.fun(indist)
+    distfun <- paste0(indist, "(dataset(), ", args, ")")
+    print(distfun)
     if (indist == "bruvo.dist"){
       out <- bruvo.msn(dataset(), showplot = FALSE, include.ties = ret)
     } else {
@@ -105,7 +173,7 @@ shinyServer(function(input, output) {
   })
   
   distcmd <- reactive({
-    dat <- input$dataset
+    dat <- dataname()
     distfunk <- distfun()
     closer   <- "showplot = FALSE)"
     if (distfunk == "diss.dist"){
@@ -121,7 +189,7 @@ shinyServer(function(input, output) {
   })
   
   cmd <- reactive({
-    dat <- input$dataset
+    dat <- dataname()
     paste0("plot_poppr_msn(", dat, 
            ",\n\t       min_span_net", 
            ",\n\t       inds = ", make_dput(inds()), 
