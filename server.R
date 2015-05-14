@@ -117,6 +117,7 @@ shinyServer(function(input, output, session) {
                       collapse = ", ")
     textInput("distargs", label = "Distance arguments", the_args)
   })
+
   reticulation <- reactive({
     input$reticulate
   })
@@ -130,19 +131,24 @@ shinyServer(function(input, output, session) {
     indist <- distfun()
     ret    <- reticulation()
     args   <- distargs()
-    DIST   <- match.fun(indist)
-    distfun <- paste0(indist, "(dataset(), ", args, ")")
+    
     print(distfun)
     if (indist == "bruvo.dist"){
-      out <- bruvo.msn(dataset(), showplot = FALSE, include.ties = ret)
+      fun <- paste0("bruvo.msn(dataset(), ", args, ", showplot = FALSE, include.ties = ret)")
+      out <- eval(parse(text = fun))
     } else {
-      if (indist == "diss.dist"){
-        DIST <- function(x) diss.dist(x, percent = FALSE)
-        dist <- DIST(dataset())
+      if (indist != "diss.dist"){
+        dat <- missingno(dataset(), "mean")
       } else {
-        dat  <- missingno(dataset(), "mean")
-        dist <- DIST(dat)
+        dat <- dataset()
       }
+      print(args)
+      if (length(args) == 1 && args == ""){
+        fun <- paste0(indist, "(dat)")
+      } else {
+        fun <- paste0(indist, "(dat, ", args, ")")
+      }
+      dist <- eval(parse(text = fun))
       out <- poppr.msn(dataset(), dist, showplot = FALSE, include.ties = ret)
     }
     return(out)
@@ -150,13 +156,22 @@ shinyServer(function(input, output, session) {
   })
 
   slide <- reactive({
-    input$greyslide
+    input$setGrey
+    isolate({
+      return(input$greyslide)
+    })
   })
   
   seed <- reactive({
     input$seed
   })
 
+  nodebase <- reactive({
+    input$setNode
+    isolate({
+      return(input$nodebase)
+    })
+  })
   inds <- reactive({
     return(strsplit(input$inds, "[[:blank:]]")[[1]])
   })
@@ -212,7 +227,8 @@ shinyServer(function(input, output, session) {
   output$plot <- renderPlot({
     set.seed(seed())
     plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), palette = usrPal(), 
-                   cutoff = cutoff(), quantiles = FALSE, beforecut = bcut())
+                   cutoff = cutoff(), quantiles = FALSE, beforecut = bcut(), 
+                   nodebase = nodebase())
   })
   
   output$cmd <- renderPrint({
