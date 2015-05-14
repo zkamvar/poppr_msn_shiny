@@ -117,12 +117,19 @@ shinyServer(function(input, output, session) {
   })
 
   reticulation <- reactive({
-    input$reticulate
+    input$submit
+    isolate({
+      input$reticulate      
+    })
+
   })
   
   
   distargs <- reactive({
-    input$distargs
+    input$submit
+    isolate({
+      input$distargs     
+    })
   })
   
   minspan <- reactive({
@@ -151,34 +158,50 @@ shinyServer(function(input, output, session) {
   })
 
   slide <- reactive({
-    input$setGrey
+    input$submit
     isolate({
       return(input$greyslide)
     })
   })
   
   seed <- reactive({
-    input$seed
+    input$submit
+    isolate({
+      return(input$seed)      
+    })
+
   })
 
   nodebase <- reactive({
-    input$setNode
+    input$submit
     isolate({
       return(input$nodebase)
     })
   })
+
   inds <- reactive({
-    return(strsplit(input$inds, "[[:blank:]]")[[1]])
+    input$submit
+    isolate({
+      return(strsplit(input$inds, "[[:blank:]]*,[[:blank:]]*")[[1]])      
+    })
+
   })
   
   usrPal <- reactive({
-    input$pal
+    input$submit
+    isolate({
+      input$pal      
+    })
+
   })
   
   cutoff <- reactive({
-    cutoff <- as.numeric(input$cutoff)
-    if (is.na(cutoff)) cutoff <- NULL
-    cutoff
+    input$submit
+    isolate({
+      cutoff <- as.numeric(input$cutoff)
+      if (is.na(cutoff)) cutoff <- NULL
+      cutoff      
+    })
   })
   
   distcmd <- reactive({
@@ -223,7 +246,10 @@ shinyServer(function(input, output, session) {
   })
 
   bcut <- reactive({
-    input$beforecut
+    input$submit
+    isolate({
+      input$beforecut
+    })
   })
 
   output$summary <- renderPrint({
