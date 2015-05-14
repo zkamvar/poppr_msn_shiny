@@ -21,7 +21,7 @@ shinyUI(fluidPage(
                               "Reynolds")
       ),
       uiOutput("distargsUI"),
-      actionButton("submit", "Make My Graph!", icon("check-circle")),
+#      actionButton("submit", "Make My Graph!", icon("check-circle")),
       checkboxInput("reticulate", "include reticulations?", TRUE), 
       sliderInput("greyslide",
                   "Grey Scale",
