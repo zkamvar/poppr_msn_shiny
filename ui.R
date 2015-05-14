@@ -8,7 +8,7 @@ shinyUI(fluidPage(
 
   sidebarLayout(
     sidebarPanel(
-      actionButton("submit", "Make My Graph!", icon("check-circle"))
+      actionButton("submit", "Make My Graph!", icon("check-circle")),
       uiOutput("selectUI"),
       checkboxInput("genclone", "convert to genclone?", TRUE),
       selectInput("distance", 
