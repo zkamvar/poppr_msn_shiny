@@ -58,37 +58,40 @@ shinyServer(function(input, output, session) {
   })
   
   dataset <- reactive({
-    if (!is.null(input$dataset) && !grepl("<choose>", input$dataset)){
-      if(grepl("Example: ", input$dataset)){
-        env <- new.env()
-        if (input$dataset == "Example: microbov"){ 
-          data("microbov", package="adegenet", envir = env) 
+    input$submit
+    isolate({
+      if (!is.null(input$dataset) && !grepl("<choose>", input$dataset)){
+        if(grepl("Example: ", input$dataset)){
+          env <- new.env()
+          if (input$dataset == "Example: microbov"){ 
+            data("microbov", package="adegenet", envir = env) 
+          }
+          else if (input$dataset == "Example: nancycats"){ 
+            data("nancycats", package="adegenet", envir = env) 
+          }
+          else if (input$dataset == "Example: H3N2"){ 
+            data("H3N2", package="adegenet", envir = env) 
+          }
+          else if (input$dataset == "Example: partial_clone"){ 
+            data("partial_clone", package="poppr", envir = env) 
+          }
+          else if (input$dataset == "Example: Aeut"){ 
+            data("Aeut", package="poppr", envir = env) 
+          }
+          else if (input$dataset == "Example: Pinf"){ 
+            data("Pinf", package="poppr", envir = env) 
+          }
+          exam <- substr(input$dataset, start = 10, stop = nchar(input$dataset))
+          dat <- get(exam, envir = env)
+        } else {
+          dat <- get(input$dataset, envir = .GlobalEnv)
         }
-        else if (input$dataset == "Example: nancycats"){ 
-          data("nancycats", package="adegenet", envir = env) 
-        }
-        else if (input$dataset == "Example: H3N2"){ 
-          data("H3N2", package="adegenet", envir = env) 
-        }
-        else if (input$dataset == "Example: partial_clone"){ 
-          data("partial_clone", package="poppr", envir = env) 
-        }
-        else if (input$dataset == "Example: Aeut"){ 
-          data("Aeut", package="poppr", envir = env) 
-        }
-        else if (input$dataset == "Example: Pinf"){ 
-          data("Pinf", package="poppr", envir = env) 
-        }
-        exam <- substr(input$dataset, start = 10, stop = nchar(input$dataset))
-        dat <- get(exam, envir = env)
       } else {
-        dat <- get(input$dataset, envir = .GlobalEnv)
+        dat <- new("genind")
       }
-    } else {
-      dat <- new("genind")
-    }
-    if (input$genclone) dat <- as.genclone(dat)
-    return(dat)
+      if (input$genclone) dat <- as.genclone(dat)
+      return(dat)
+    })
   })
 
   
@@ -133,28 +136,30 @@ shinyServer(function(input, output, session) {
   })
   
   minspan <- reactive({
-    indist <- distfun()
-    ret    <- reticulation()
-    args   <- distargs()
-    if (indist == "bruvo.dist"){
-      fun <- paste0("bruvo.msn(dataset(), ", args, ", showplot = FALSE, include.ties = ret)")
-      out <- eval(parse(text = fun))
-    } else {
-      if (indist != "diss.dist"){
-        dat <- missingno(dataset(), "mean")
+    input$submit
+    isolate({
+      indist <- distfun()
+      ret    <- reticulation()
+      args   <- distargs()
+      if (indist == "bruvo.dist"){
+        fun <- paste0("bruvo.msn(dataset(), ", args, ", showplot = FALSE, include.ties = ret)")
+        out <- eval(parse(text = fun))
       } else {
-        dat <- dataset()
+        if (indist != "diss.dist"){
+          dat <- missingno(dataset(), "mean")
+        } else {
+          dat <- dataset()
+        }
+        if (length(args) == 1 && args == ""){
+          fun <- paste0(indist, "(dat)")
+        } else {
+          fun <- paste0(indist, "(dat, ", args, ")")
+        }
+        dist <- eval(parse(text = fun))
+        out <- poppr.msn(dataset(), dist, showplot = FALSE, include.ties = ret)
       }
-      if (length(args) == 1 && args == ""){
-        fun <- paste0(indist, "(dat)")
-      } else {
-        fun <- paste0(indist, "(dat, ", args, ")")
-      }
-      dist <- eval(parse(text = fun))
-      out <- poppr.msn(dataset(), dist, showplot = FALSE, include.ties = ret)
-    }
-    return(out)
-
+      return(out)
+    })
   })
 
   slide <- reactive({
@@ -258,10 +263,16 @@ shinyServer(function(input, output, session) {
   })
 
   output$plot <- renderPlot({
-    set.seed(seed())
-    plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), 
-                   palette = usrPal(), cutoff = cutoff(), quantiles = FALSE, 
-                   beforecut = bcut(), nodebase = nodebase())
+    if(!input$submit) {
+      plot.new() 
+      rect(0, 1, 1, 0.8, col = "indianred2", border = 'transparent' ) + 
+      text(x = 0.5, y = 0.9, "No data has been selected.", cex = 1.6, col = "white")
+    } else {
+      set.seed(seed())
+      plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), 
+                     palette = usrPal(), cutoff = cutoff(), quantiles = FALSE, 
+                     beforecut = bcut(), nodebase = nodebase())      
+    }
   })
   
   output$cmd <- renderPrint({
