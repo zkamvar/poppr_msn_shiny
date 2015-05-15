@@ -209,7 +209,13 @@ shinyServer(function(input, output, session) {
 
   inds <- reactive({
     # isolate({
-      return(strsplit(input$inds, "[[:blank:]]*,[[:blank:]]*")[[1]])      
+      inds <- strsplit(input$inds, "[[:blank:]]*,[[:blank:]]*")[[1]]
+
+      if (input$ind_or_mlg == "sample names" || inds == "ALL"){
+        return(inds)
+      } else {
+        return(as.numeric(inds))
+      }
     # })
 
   })
@@ -276,6 +282,7 @@ shinyServer(function(input, output, session) {
     paste0("plot_poppr_msn(", dat, 
            ",\n\t       min_span_net", 
            ",\n\t       inds = ", make_dput(inds()), 
+           ",\n\t       mlg = ", input$mlgs,
            ",\n\t       gadj = ", input$greyslide,
            ",\n\t       nodebase = ", input$nodebase,
            ",\n\t       palette = ", make_dput(input$pal),
@@ -304,6 +311,7 @@ shinyServer(function(input, output, session) {
     input$seed
     input$greyslide
     input$inds
+    input$mlgs
     input$`update-graph`
     if(!input$submit) {
       plot.new() 
@@ -312,7 +320,7 @@ shinyServer(function(input, output, session) {
            cex = 1.6, col = "white")
     } else {
       set.seed(seed())
-      plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), 
+      plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), mlg = input$mlgs,
                      palette = usrPal(), cutoff = cutoff(), quantiles = FALSE, 
                      beforecut = bcut(), nodebase = nodebase(), 
                      pop.leg = popLeg(), scale.leg = scaleLeg())      

@@ -79,9 +79,12 @@ shinyUI(fluidPage(
                    "Random Seed",
                    "69"
       ),
-      textInput("inds",
-                "Individuals to label (sample names separated by spaces)",
-                "ALL"),
+      radioButtons("ind_or_mlg", "Labels", 
+                   choices = c("sample names", "MLGs"),
+                   selected = "sample names", inline = TRUE
+      ),
+      textInput("inds", NULL, "ALL"),
+      checkboxInput("mlgs", "show MLG", FALSE),
       selectInput("pal", "Indicate a color palette to be used",
                   choices=c("rainbow", 
                             "cm.colors", 
