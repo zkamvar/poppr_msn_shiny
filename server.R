@@ -144,7 +144,11 @@ shinyServer(function(input, output, session) {
   })
 
   replen <- reactive({
-    paste0("replen = c(", input$replen, ")")
+    if (!grepl("\\(", input$replen)){
+      paste0("replen = c(", input$replen, ")")      
+    } else {
+      paste0("replen = ", input$replen)
+    }
   })
 
   minspan <- reactive({

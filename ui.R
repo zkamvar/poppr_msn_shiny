@@ -44,7 +44,7 @@ shinyUI(fluidPage(
                                 "Infinite",
                                 "Average Addition/Loss"),
                     selected = "Average Addition/Loss"),
-        textInput("replen", "SSR repeat lengths (comma separated)", "1, 2, 3")
+        textInput("replen", "SSR repeat lengths\n(comma separated or a valid R expression)", "1, 2, 3")
       ),
       conditionalPanel("input.distance != 'Bruvo'",
         uiOutput("distargsUI")
