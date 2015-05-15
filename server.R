@@ -56,44 +56,58 @@ shinyServer(function(input, output, session) {
                 selected = "Example: partial_clone"
     )
   })
+
+  in_dataset <- reactive({
+    if (!is.null(input$dataset) && !grepl("<choose>", input$dataset)){
+      if(grepl("Example: ", input$dataset)){
+        env <- new.env()
+        if (input$dataset == "Example: microbov"){ 
+          data("microbov", package="adegenet", envir = env) 
+        }
+        else if (input$dataset == "Example: nancycats"){ 
+          data("nancycats", package="adegenet", envir = env) 
+        }
+        else if (input$dataset == "Example: H3N2"){ 
+          data("H3N2", package="adegenet", envir = env) 
+        }
+        else if (input$dataset == "Example: partial_clone"){ 
+          data("partial_clone", package="poppr", envir = env) 
+        }
+        else if (input$dataset == "Example: Aeut"){ 
+          data("Aeut", package="poppr", envir = env) 
+        }
+        else if (input$dataset == "Example: Pinf"){ 
+          data("Pinf", package="poppr", envir = env) 
+        }
+        exam <- substr(input$dataset, start = 10, stop = nchar(input$dataset))
+        dat <- get(exam, envir = env)
+      } else {
+        dat <- get(input$dataset, envir = .GlobalEnv)
+      }
+    } else {
+      dat <- new("genind")
+    }
+    if (input$genclone) dat <- as.genclone(dat)
+    return(dat)
+  })
+  
+  output$selectPops <- renderUI({
+    input$dataset
+    checkboxGroupInput("sublist",
+                "choose populations",
+                choices = in_dataset()@pop.names,
+                inline = TRUE,
+                selected = in_dataset()@pop.names)
+  })
   
   dataset <- reactive({
+    input$`update-data`
+    input$dataset
     isolate({
-      if (!is.null(input$dataset) && !grepl("<choose>", input$dataset)){
-        if(grepl("Example: ", input$dataset)){
-          env <- new.env()
-          if (input$dataset == "Example: microbov"){ 
-            data("microbov", package="adegenet", envir = env) 
-          }
-          else if (input$dataset == "Example: nancycats"){ 
-            data("nancycats", package="adegenet", envir = env) 
-          }
-          else if (input$dataset == "Example: H3N2"){ 
-            data("H3N2", package="adegenet", envir = env) 
-          }
-          else if (input$dataset == "Example: partial_clone"){ 
-            data("partial_clone", package="poppr", envir = env) 
-          }
-          else if (input$dataset == "Example: Aeut"){ 
-            data("Aeut", package="poppr", envir = env) 
-          }
-          else if (input$dataset == "Example: Pinf"){ 
-            data("Pinf", package="poppr", envir = env) 
-          }
-          exam <- substr(input$dataset, start = 10, stop = nchar(input$dataset))
-          dat <- get(exam, envir = env)
-        } else {
-          dat <- get(input$dataset, envir = .GlobalEnv)
-        }
-      } else {
-        dat <- new("genind")
-      }
-      if (input$genclone) dat <- as.genclone(dat)
-      return(dat)
+      popsub(in_dataset(), input$sublist, drop = FALSE)
     })
   })
 
-  
   dataname <- reactive({
     if (!grepl("<choose>", input$dataset)){
       if(grepl("Example: ", input$dataset)){
@@ -108,7 +122,6 @@ shinyServer(function(input, output, session) {
   })
   
   distfun <- reactive({ 
-    input$submit
     get_dist(input$distance) 
   })
 
@@ -120,19 +133,12 @@ shinyServer(function(input, output, session) {
   })
 
   reticulation <- reactive({
-    input$submit
-    isolate({
-      input$reticulate      
-    })
-
+    input$reticulate        
   })
   
   
   distargs <- reactive({
-    input$submit
-    isolate({
-      input$distargs     
-    })
+    input$distargs     
   })
   
   addloss <- reactive({
@@ -152,6 +158,9 @@ shinyServer(function(input, output, session) {
   })
 
   minspan <- reactive({
+    input$dataset
+    input$`update-data`
+    input$reticulate
     input$submit
     isolate({
       indist <- distfun()
@@ -180,63 +189,55 @@ shinyServer(function(input, output, session) {
   })
 
   slide <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       return(input$greyslide)
-    })
+    # })
   })
   
   seed <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       return(input$seed)      
-    })
+    # })
 
   })
 
   nodebase <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       return(input$nodebase)
-    })
+    # })
   })
 
   inds <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       return(strsplit(input$inds, "[[:blank:]]*,[[:blank:]]*")[[1]])      
-    })
+    # })
 
   })
   
   usrPal <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       input$pal      
-    })
+    # })
   })
   
   popLeg <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       input$pop.leg
-    })
+    # })
   })
 
   scaleLeg <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       input$scale.leg
-    })
+    # })
   })
 
   cutoff <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       cutoff <- as.numeric(input$cutoff)
       if (is.na(cutoff)) cutoff <- NULL
       cutoff      
-    })
+    # })
   })
   
   distcmd <- reactive({
@@ -282,10 +283,9 @@ shinyServer(function(input, output, session) {
   })
 
   bcut <- reactive({
-    input$submit
-    isolate({
+    # isolate({
       input$beforecut
-    })
+    # })
   })
 
   output$summary <- renderPrint({
@@ -294,6 +294,15 @@ shinyServer(function(input, output, session) {
   })
 
   output$plot <- renderPlot({
+    input$pal
+    input$pop.leg
+    input$scale.leg
+    input$beforecut
+    input$nodebase
+    input$seed
+    input$greyslide
+    input$inds
+    input$`update-graph`
     if(!input$submit) {
       plot.new() 
       rect(0, 1, 1, 0.8, col = "indianred2", border = 'transparent' ) + 

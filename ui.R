@@ -23,8 +23,18 @@ shinyUI(fluidPage(
                        `aria-valuemin`="0", `aria-valuemax`="100", 
                        style="width: 100%"), tags$strong("loading")))
       ),
-      hr(),
+      tagAppendChildren(
+        tags$div(style="display:inline-block"),
+        list(
+          actionButton("submit", "Show My Graph!", icon("check-circle")),
+          actionButton("update-data", "Update Data", icon("refresh")),
+          actionButton("update-graph", "Update Graph", icon("refresh"))
+        )
+      ),
+
       uiOutput("selectUI"),
+      uiOutput("selectPops"),
+      
       checkboxInput("genclone", "convert to genclone?", TRUE),
       selectInput("distance", 
                   "choose distance calculation", 
@@ -50,9 +60,6 @@ shinyUI(fluidPage(
         uiOutput("distargsUI")
       ),
       checkboxInput("reticulate", "include reticulations?", TRUE), 
-
-      actionButton("submitdist", "Calculate MSN", icon("gears")),
-      
       checkboxInput("pop.leg", "population legend", TRUE), 
       checkboxInput("scale.leg", "scale bar", TRUE), 
       sliderInput("greyslide",
@@ -99,8 +106,7 @@ shinyUI(fluidPage(
                      NULL,
                      step = 0.001)
       ),
-      checkboxInput("beforecut", "Keep graph position", TRUE),
-      actionButton("submit", "Show My Graph!", icon("check-circle"))
+      checkboxInput("beforecut", "Keep graph position", TRUE)
     ),
 
 
