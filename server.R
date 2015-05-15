@@ -108,7 +108,7 @@ shinyServer(function(input, output, session) {
   })
   
   distfun <- reactive({ 
-    input$submitdist
+    input$submit
     get_dist(input$distance) 
   })
 
@@ -120,7 +120,7 @@ shinyServer(function(input, output, session) {
   })
 
   reticulation <- reactive({
-    input$submitdist
+    input$submit
     isolate({
       input$reticulate      
     })
@@ -129,19 +129,32 @@ shinyServer(function(input, output, session) {
   
   
   distargs <- reactive({
-    input$submitdist
+    input$submit
     isolate({
       input$distargs     
     })
   })
   
+  addloss <- reactive({
+    switch(input$bruvo_model,
+           "Genome Addition" = "add = TRUE, loss = FALSE",
+           "Genome Loss" = "add = FALSE, loss = TRUE",
+           "Infinite" = "add = FALSE, loss = FALSE",
+           "Average Addition/Loss" = "add = TRUE, loss = TRUE")
+  })
+
+  replen <- reactive({
+    paste0("replen = c(", input$replen, ")")
+  })
+
   minspan <- reactive({
-    input$submitdist
+    input$submit
     isolate({
       indist <- distfun()
       ret    <- reticulation()
       args   <- distargs()
       if (indist == "bruvo.dist"){
+        args <- paste(replen(), addloss(), sep = ", ")
         fun <- paste0("bruvo.msn(dataset(), ", args, ", showplot = FALSE, include.ties = ret)")
         out <- eval(parse(text = fun))
       } else {
@@ -229,6 +242,7 @@ shinyServer(function(input, output, session) {
     closer   <- paste0("showplot = FALSE, include.ties = ", reticulation(), ")")
     has_no_args <- length(args) == 1 && args == ""
     if (distfunk == "bruvo.dist"){
+      args <- paste(replen(), addloss(), sep = ", ")
       distfunk <- "bruvo.msn"
       closer <- paste0(", ", args, ", ", closer)
       return_cmd <- paste0(distfunk, "(", dat, closer)
