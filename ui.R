@@ -26,12 +26,12 @@ shinyUI(fluidPage(
       tagAppendChildren(
         tags$div(style="display:inline-block"),
         list(
-          actionButton("submit", "Show My Graph!", icon("check-circle")),
-          actionButton("update-data", "Update Data", icon("refresh")),
-          actionButton("update-graph", "Update Graph", icon("refresh"))
+          actionButton("submit", "Go!", icon("check-circle")),
+          actionButton("update-data", "reData", icon("refresh")),
+          actionButton("update-graph", "reGraph", icon("refresh"))
         )
       ),
-
+      h3("Data Parameters"),
       uiOutput("selectUI"),
       uiOutput("selectPops"),
       
@@ -60,6 +60,7 @@ shinyUI(fluidPage(
         uiOutput("distargsUI")
       ),
       checkboxInput("reticulate", "include reticulations?", TRUE), 
+      h3("Graphical Parameters"),
       checkboxInput("pop.leg", "population legend", TRUE), 
       checkboxInput("scale.leg", "scale bar", TRUE), 
       sliderInput("greyslide",

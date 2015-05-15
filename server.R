@@ -244,6 +244,8 @@ shinyServer(function(input, output, session) {
     dat      <- dataname()
     distfunk <- distfun()
     args     <- distargs()
+
+    first_dat <- paste0(dat, " <- popsub(", dat, ", sublist = ", make_dput(input$sublist), ")\n")
     closer   <- paste0("showplot = FALSE, include.ties = ", reticulation(), ")")
     has_no_args <- length(args) == 1 && args == ""
     if (distfunk == "bruvo.dist"){
@@ -266,7 +268,7 @@ shinyServer(function(input, output, session) {
                            dat, "_dist <- ", distfunk,
                            "min_span_net <- ", msnfunk)
     }
-    return(return_cmd)
+    return(paste0(first_dat, return_cmd))
   })
   
   cmd <- reactive({
