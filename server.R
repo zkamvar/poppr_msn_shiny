@@ -58,7 +58,6 @@ shinyServer(function(input, output, session) {
   })
   
   dataset <- reactive({
-    input$submit
     isolate({
       if (!is.null(input$dataset) && !grepl("<choose>", input$dataset)){
         if(grepl("Example: ", input$dataset)){
@@ -109,6 +108,7 @@ shinyServer(function(input, output, session) {
   })
   
   distfun <- reactive({ 
+    input$submitdist
     get_dist(input$distance) 
   })
 
@@ -120,7 +120,7 @@ shinyServer(function(input, output, session) {
   })
 
   reticulation <- reactive({
-    input$submit
+    input$submitdist
     isolate({
       input$reticulate      
     })
@@ -129,14 +129,14 @@ shinyServer(function(input, output, session) {
   
   
   distargs <- reactive({
-    input$submit
+    input$submitdist
     isolate({
       input$distargs     
     })
   })
   
   minspan <- reactive({
-    input$submit
+    input$submitdist
     isolate({
       indist <- distfun()
       ret    <- reticulation()

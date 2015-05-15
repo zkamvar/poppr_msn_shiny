@@ -8,7 +8,22 @@ shinyUI(fluidPage(
 
   sidebarLayout(
     sidebarPanel(
-      actionButton("submit", "Make My Graph!", icon("check-circle")),
+      tags$h5("status"),
+      conditionalPanel(condition="!$('html').hasClass('shiny-busy')",
+        tagAppendChild(tags$div(class="progress"),
+        tagAppendChild(tags$div(class="progress-bar progress-bar-success", 
+                       role="progressbar", `aria-valuenow`="100", 
+                       `aria-valuemin`="0", `aria-valuemax`="100", 
+                       style="width: 100%"), tags$strong("ready")))
+      ),
+      conditionalPanel(condition="$('html').hasClass('shiny-busy')",
+        tagAppendChild(tags$div(class="progress"),
+        tagAppendChild(tags$div(class="progress-bar progress-bar-striped active", 
+                       role="progressbar", `aria-valuenow`="100", 
+                       `aria-valuemin`="0", `aria-valuemax`="100", 
+                       style="width: 100%"), tags$strong("loading")))
+      ),
+      hr(),
       uiOutput("selectUI"),
       checkboxInput("genclone", "convert to genclone?", TRUE),
       selectInput("distance", 
@@ -21,9 +36,23 @@ shinyUI(fluidPage(
                               "Provesti",
                               "Reynolds")
       ),
-      uiOutput("distargsUI"),
-#      actionButton("submit", "Make My Graph!", icon("check-circle")),
+      conditionalPanel("input.distance == 'Bruvo'",
+        selectInput("bruvo_model",
+                    "Select a model for missing data",
+                    choices = c("Genome Addition",
+                                "Genome Loss",
+                                "Infinite",
+                                "Average Addition/Loss"),
+                    selected = "Average Addition/Loss"),
+        textInput("replen", "SSR repeat lengths (comma separated)", "1, 2, 3")
+      ),
+      conditionalPanel("input.distance != 'Bruvo'",
+        uiOutput("distargsUI")
+      ),
       checkboxInput("reticulate", "include reticulations?", TRUE), 
+
+      actionButton("submitdist", "Calculate MSN", icon("gears")),
+      
       checkboxInput("pop.leg", "population legend", TRUE), 
       checkboxInput("scale.leg", "scale bar", TRUE), 
       sliderInput("greyslide",
@@ -70,8 +99,8 @@ shinyUI(fluidPage(
                      NULL,
                      step = 0.001)
       ),
-      checkboxInput("beforecut", "Keep graph position", TRUE)
-#      actionButton("submit", "Make My Graph!", icon("check-circle"))
+      checkboxInput("beforecut", "Keep graph position", TRUE),
+      actionButton("submit", "Show My Graph!", icon("check-circle"))
     ),
 
 
