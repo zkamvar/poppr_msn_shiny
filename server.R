@@ -211,7 +211,7 @@ shinyServer(function(input, output, session) {
     # isolate({
       inds <- strsplit(input$inds, "[[:blank:]]*,[[:blank:]]*")[[1]]
 
-      if (input$ind_or_mlg == "sample names" || inds == "ALL"){
+      if (input$ind_or_mlg == "sample names" || inds == "ALL" || inds == ""){
         return(inds)
       } else {
         return(as.numeric(inds))
