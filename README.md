@@ -18,3 +18,6 @@ To run this application you should have installed shiny and poppr. After that yo
 shiny::runGitHub("zkamvar/poppr_msn_shiny")
 ```
 
+### Screencapture
+
+![](20150515_monpop.png)
