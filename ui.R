@@ -85,8 +85,8 @@ shinyUI(fluidPage(
       ),
       textInput("inds", NULL, "ALL"),
       checkboxInput("mlgs", "show MLG", FALSE),
-      selectInput("pal", "Indicate a color palette to be used",
-                  choices=c("rainbow", 
+      radioButtons("pal", "Indicate a color palette to be used",
+                   choices=c("rainbow", 
                             "cm.colors", 
                             "topo.colors", 
                             "terrain.colors", 
@@ -95,7 +95,11 @@ shinyUI(fluidPage(
                             "spectral",
                             "seasun",
                             "azur",
-                            "wasp")
+                            "wasp",
+                            "custom"), inline = TRUE
+      ),
+      conditionalPanel("input.pal == 'custom'",
+        textInput("custom_pal", "custom palette/function", "function(x) 'purple'")
       ),
       conditionalPanel("input.distance == 'Dissimilarity'",
         numericInput("cutoff", 

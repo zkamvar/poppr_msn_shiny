@@ -221,11 +221,17 @@ shinyServer(function(input, output, session) {
   })
   
   usrPal <- reactive({
-    # isolate({
-      input$pal      
-    # })
+    input$`update-data`
+    input$`update-graph`
+    isolate({
+      if (input$pal == 'custom'){
+        eval(parse(text = input$custom_pal))
+      } else {
+        input$pal
+      }
+    })
   })
-  
+
   popLeg <- reactive({
     # isolate({
       input$pop.leg
@@ -279,13 +285,14 @@ shinyServer(function(input, output, session) {
   
   cmd <- reactive({
     dat <- dataname()
+    pal <- ifelse(input$pal == 'custom', input$custom_pal, input$pal)
     paste0("plot_poppr_msn(", dat, 
            ",\n\t       min_span_net", 
            ",\n\t       inds = ", make_dput(inds()), 
            ",\n\t       mlg = ", input$mlgs,
            ",\n\t       gadj = ", input$greyslide,
            ",\n\t       nodebase = ", input$nodebase,
-           ",\n\t       palette = ", make_dput(input$pal),
+           ",\n\t       palette = ", pal,
            ",\n\t       cutoff = ", ifelse(is.null(cutoff()), "NULL", cutoff()),
            ",\n\t       quantiles = FALSE",
            ",\n\t       beforecut = ", bcut(), ")")
@@ -303,13 +310,10 @@ shinyServer(function(input, output, session) {
   })
 
   output$plot <- renderPlot({
-    input$pal
     input$pop.leg
     input$scale.leg
     input$beforecut
     input$nodebase
-    input$seed
-    input$greyslide
     input$inds
     input$mlgs
     input$`update-graph`
