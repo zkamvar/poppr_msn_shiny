@@ -122,8 +122,40 @@ shinyUI(fluidPage(
       tabsetPanel(
           tabPanel("Plot", plotOutput("plot", height = '600px')),
           tabPanel("Data", verbatimTextOutput("summary")),
-          tabPanel("Command", verbatimTextOutput("cmd"))
-        )
+          tabPanel("Command", verbatimTextOutput("cmd")),
+          tabPanel("Save Plot",
+                   radioButtons("pdf_png", label = "Choose output filetype",
+                                choices = c("pdf", "png"),
+                                selected = "pdf",
+                                inline = TRUE),
+                   conditionalPanel("input.pdf_png == 'pdf'",
+                     sliderInput("plot_width", "Width (in)",
+                                 value = 400,
+                                 min = 1, 
+                                 max = 5000, 
+                                 width = "50%"),
+                     sliderInput("plot_height", "Height (in)",
+                                 value = 400,
+                                 min = 1, 
+                                 max = 5000, 
+                                 width = "50%"),
+                     actionButton("save_pdf", "Save PDF", icon("file-pdf-o"))
+                  ),
+                  conditionalPanel("input.pdf_png == 'png'",
+                    sliderInput("plot_width", "Width (px)",
+                                value = 400,
+                                min = 1, 
+                                max = 5000, 
+                                width = "50%"),
+                    sliderInput("plot_height", "Height (px)",
+                                value = 400,
+                                min = 1, 
+                                max = 5000, 
+                                width = "50%"),
+                    actionButton("save_png", "Save PNG", icon("file-image-o"))
+                  )
+          )
     )
   )
+)
 ))
