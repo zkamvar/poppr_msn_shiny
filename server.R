@@ -256,26 +256,32 @@ shinyServer(function(input, output, session) {
     dat      <- dataname()
     distfunk <- distfun()
     args     <- distargs()
-
-    first_dat <- paste0(dat, " <- popsub(", dat, ", sublist = ", make_dput(input$sublist), ")\n")
+    the_pops <- popNames(in_dataset())
+    match_pops <- the_pops %in% input$sublist
+    half <- ceiling(length(the_pops)/2)
+    if (sum(match_pops) < half){
+      first_dat <- paste0(dat, "_sub <- popsub(", dat, ", sublist = ", make_dput(input$sublist), ")\n")
+    } else {
+      first_dat <- paste0(dat, "_sub <- popsub(", dat, ", blacklist = ", make_dput(the_pops[!match_pops]), ")\n")
+    }
     closer   <- paste0("showplot = FALSE, include.ties = ", reticulation(), ")")
     has_no_args <- length(args) == 1 && args == ""
     if (distfunk == "bruvo.dist"){
       args <- paste(replen(), addloss(), sep = ", ")
       distfunk <- "bruvo.msn"
       closer <- paste0(", ", args, ", ", closer)
-      return_cmd <- paste0(distfunk, "(", dat, closer)
+      return_cmd <- paste0(distfunk, "(", dat, "_sub", closer)
     } else { 
       if (distfunk == "diss.dist"){
         missfunk <- character(0)
-        distfunk <- paste0(distfunk, "(", dat, ", ", args, ")\n")        
+        distfunk <- paste0(distfunk, "(", dat, "_sub, ", args, ")\n")        
       } else {
         missfunk <- paste0(dat, "_nomiss <- ", "missingno(", dat, 
                            ", type = 'mean')\n")
         args <- ifelse(has_no_args, "", paste0(", ", args))
         distfunk <- paste0(distfunk, "(", dat, "_nomiss", args, ")\n")        
       }
-      msnfunk <- paste0("poppr.msn(", dat, ", ", dat, "_dist, ", closer, "\n")
+      msnfunk <- paste0("poppr.msn(", dat, "_sub, ", dat, "_dist, ", closer, "\n")
       return_cmd <- paste0(missfunk, 
                            dat, "_dist <- ", distfunk,
                            "min_span_net <- ", msnfunk)
