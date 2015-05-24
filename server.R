@@ -337,51 +337,34 @@ shinyServer(function(input, output, session) {
     cat(cmd())
   })
 
-#   
-#   output$plot1 <- renderImage({
-#     # A temp file to save the output. It will be deleted after renderImage
-#     # sends it, because deleteFile=TRUE.
-#     outfile <- tempfile(fileext='.png')
-#     
-#     # Generate a png
-#     png(outfile, width=400, height=400)
-#     hist(rnorm(input$n))
-#     dev.off()
-#     
-#     # Return a list
-#     list(src = outfile,
-#          alt = "This is alternate text")
-#   }, deleteFile = TRUE)
-#   
-#   # A dynamically-sized plot
-#   output$plot2 <- renderImage({
-#     # Read plot2's width and height. These are reactive values, so this
-#     # expression will re-run whenever these values change.
-#     width  <- clientData$output_plot2_width
-#     height <- clientData$output_plot2_height
-#     
-#     # A temp file to save the output.
-#     outfile <- tempfile(fileext='.png')
-#     
-#     png(outfile, width=width, height=height)
-#     hist(rnorm(input$obs))
-#     dev.off()
-#     
-#     # Return a list containing the filename
-#     list(src = outfile,
-#          width = width,
-#          height = height,
-#          alt = "This is alternate text")
-#   }, deleteFile = TRUE)
-#   
-#   # Send a pre-rendered image, and don't delete the image after sending it
-#   output$plot3 <- renderImage({
-#     # When input$n is 1, filename is ./images/image1.jpeg
-#     filename <- normalizePath(file.path('./images',
-#                                         paste('image', input$n, '.jpeg', sep='')))
-#     
-#     # Return a list containing the filename
-#     list(src = filename)
-#   }, deleteFile = FALSE)
-#   
+  output$save_pdf <- downloadHandler(
+    filename = function() paste0('msn-', Sys.Date(), '.pdf'),
+    content = function(file) {
+      isolate({
+        # Generate a png
+        pdf(file, width = input$pdf_plot_width, height = input$pdf_plot_height)
+        set.seed(seed())
+        plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), mlg = input$mlgs,
+                       palette = usrPal(), cutoff = cutoff(), quantiles = FALSE, 
+                       beforecut = bcut(), nodebase = nodebase(), 
+                       pop.leg = popLeg(), scale.leg = scaleLeg())
+        dev.off()
+      })      
+    }
+  )
+  output$save_png <- downloadHandler(
+    filename = function() paste0('msn-', Sys.Date(), '.png'),
+    content = function(file) {
+      isolate({
+        # Generate a png
+        png(file, width = input$png_plot_width, height = input$png_plot_height)
+        set.seed(seed())
+        plot_poppr_msn(dataset(), minspan(), ind = inds(), gadj = slide(), mlg = input$mlgs,
+                       palette = usrPal(), cutoff = cutoff(), quantiles = FALSE, 
+                       beforecut = bcut(), nodebase = nodebase(), 
+                       pop.leg = popLeg(), scale.leg = scaleLeg())
+        dev.off()
+      })      
+    }
+  )   
 })
