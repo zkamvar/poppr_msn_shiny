@@ -21,3 +21,31 @@ shiny::runGitHub("zkamvar/poppr_msn_shiny")
 ### Screencapture
 
 ![](20150515_monpop.png)
+
+To reproduce the screencapture above:
+
+```R
+# Set up data
+library("poppr")
+library("magrittr")
+data(monpop)
+splitStrata(monpop) <- ~Tree/Year/Symptom
+summary(monpop)
+t26 <- monpop %>% setPop(~Tree) %>% popsub("26") %>% setPop(~Year/Symptom)
+t26
+shiny::runGitHub("zkamvar/poppr_msn_shiny")
+```
+
+Choose the `t26` data set at the bottom and then copy and paste this into the
+"SSR repeat lengths" input box after selecting "Bruvo" as  the distance 
+calculation:
+ 
+```R
+c(CHMFc4 = 7, CHMFc5 = 2, CHMFc12 = 4, SEA = 4, SED = 4, SEE = 2, SEG = 6, SEI = 3, SEL = 4, SEN = 2, SEP = 4, SEQ = 2, SER = 4)
+```
+- Distance calculation: Bruvo
+- Populations: `9_BB`, `9_FR`
+- Node scale: 1.25
+- Color Palette: `cm.colors`
+- Labels: none
+- Random Seed: 9001
