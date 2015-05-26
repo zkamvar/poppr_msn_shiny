@@ -343,7 +343,7 @@ shinyServer(function(input, output, session) {
     if(!input$submit) {
       plot.new() 
       rect(0, 1, 1, 0.8, col = "indianred2", border = 'transparent' ) + 
-      text(x = 0.5, y = 0.9, "Please select data and click\nthe 'Make My Graph' button.", 
+      text(x = 0.5, y = 0.9, "Please select data and click\nthe 'Go!' button.", 
            cex = 1.6, col = "white")
     } else {
       set.seed(seed())
