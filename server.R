@@ -122,9 +122,17 @@ shinyServer(function(input, output, session) {
   })
   
   distfun <- reactive({ 
-    get_dist(input$distance) 
+    if (input$distance == "Custom"){
+      eval(parse(text = input$custom_distance))
+    } else {
+      get_dist(input$distance) 
+    }
   })
 
+  output$customDist <- renderUI({
+    textInput("custom_distance", label = "Custom Distance Function", "function(x) dist(tab(x))")
+  })
+  
   output$distargsUI <- renderUI({
     the_args <- formals(distfun())[-1]
     the_args <- paste(names(the_args), unlist(the_args), sep = " = ", 

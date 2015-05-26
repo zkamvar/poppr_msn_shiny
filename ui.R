@@ -44,7 +44,11 @@ shinyUI(fluidPage(
                               "Rogers",
                               "Edwards",
                               "Provesti",
-                              "Reynolds")
+                              "Reynolds",
+                              "Custom")
+      ),
+      conditionalPanel("input.distance == 'Custom'",
+        uiOutput("customDist")
       ),
       conditionalPanel("input.distance == 'Bruvo'",
         selectInput("bruvo_model",
