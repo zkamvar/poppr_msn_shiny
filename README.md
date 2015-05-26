@@ -20,7 +20,7 @@ shiny::runGitHub("zkamvar/poppr_msn_shiny")
 
 ### Screencapture
 
-![](20150515_monpop.png)
+![](20150526_monpop.png)
 
 To reproduce the screencapture above:
 
