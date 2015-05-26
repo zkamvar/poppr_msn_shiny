@@ -40,6 +40,14 @@ get_globals <- function(objclass = c("genind", "genclone")){
 
 globals <- get_globals()
 
+parse_distfun <- function(x)
+{
+  if (grepl("function", x)){
+    x <- paste0("(", x, ")")
+  }
+  return(x)
+}
+
 shinyServer(function(input, output, session) {
   
   # Module to add the user's global environment. 
@@ -123,7 +131,7 @@ shinyServer(function(input, output, session) {
   
   distfun <- reactive({ 
     if (input$distance == "Custom"){
-      eval(parse(text = input$custom_distance))
+      parse_distfun(input$custom_distance)
     } else {
       get_dist(input$distance) 
     }
@@ -134,7 +142,8 @@ shinyServer(function(input, output, session) {
   })
   
   output$distargsUI <- renderUI({
-    the_args <- formals(distfun())[-1]
+    the_fun <- eval(parse(text = distfun()))
+    the_args <- formals(the_fun)[-1]
     the_args <- paste(names(the_args), unlist(the_args), sep = " = ", 
                       collapse = ", ")
     textInput("distargs", label = "Distance arguments", the_args)
@@ -174,7 +183,7 @@ shinyServer(function(input, output, session) {
       indist <- distfun()
       ret    <- reticulation()
       args   <- distargs()
-      if (indist == "bruvo.dist"){
+      if (input$distance == "Bruvo"){
         args <- paste(replen(), addloss(), sep = ", ")
         fun <- paste0("bruvo.msn(dataset(), ", args, ", showplot = FALSE, include.ties = ret)")
         out <- eval(parse(text = fun))
