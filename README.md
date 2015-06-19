@@ -1,5 +1,31 @@
 # Shiny App for minimum spanning networks in poppr
 
+## UPDATE: moved to [poppr](https://github.com/grunwaldlab/poppr/tree/2.0-rc)!
+
+This has been moved to poppr 2.0 and is available by using:
+
+```R
+devtools::install_github("thibautjombart/adegenet") # requires adegenet 2.0
+devtools::install_github("grunwaldlab/poppr@2.0-rc")
+poppr::imsn()
+```
+
+For the example below:
+
+```R
+# Set up data
+library("poppr")
+library("magrittr")
+data(monpop)
+splitStrata(monpop) <- ~Tree/Year/Symptom
+summary(monpop)
+t26 <- monpop %>% setPop(~Tree) %>% popsub("26") %>% setPop(~Year/Symptom)
+t26
+imsn()
+```
+
+## Old README
+
 This repository contains a shiny application that will create and display minimum spanning networks via the poppr R package. This provides a simple way of exploring visualization of these networks with your own data.
 
 It is recommended to use poppr version 2.0 for this. It is still in development. You can install it via github:
