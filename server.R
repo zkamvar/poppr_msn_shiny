@@ -1,12 +1,5 @@
-
-# This is the server logic for a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
-#
-
-library(shiny)
-library(poppr)
+library("shiny")
+library("poppr")
 
 get_dist <- function(indist){
   indist <- switch(indist,
@@ -46,6 +39,10 @@ parse_distfun <- function(x)
     x <- paste0("(", x, ")")
   }
   return(x)
+}
+
+if (length(getAnywhere("popNames")$objs) == 0){
+  popNames <- function(x) x@pop.names
 }
 
 shinyServer(function(input, output, session) {
@@ -103,9 +100,9 @@ shinyServer(function(input, output, session) {
     input$dataset
     checkboxGroupInput("sublist",
                 "choose populations",
-                choices = in_dataset()@pop.names,
+                choices = popNames(in_dataset()),
                 inline = TRUE,
-                selected = in_dataset()@pop.names)
+                selected = popNames(in_dataset()))
   })
   
   dataset <- reactive({
@@ -389,5 +386,8 @@ shinyServer(function(input, output, session) {
         dev.off()
       })      
     }
-  )   
+  )
+  output$infoRmation <- renderPrint({
+    sessionInfo()
+  })
 })

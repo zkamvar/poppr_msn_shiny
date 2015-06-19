@@ -161,6 +161,9 @@ shinyUI(fluidPage(
                           step = 1),
               downloadButton("save_png", "Save PNG", class = "btn-info")
             )
+          ),
+          tabPanel("Session Information",
+                   verbatimTextOutput("infoRmation")
           )
     )
   )
