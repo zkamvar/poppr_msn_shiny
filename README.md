@@ -69,9 +69,25 @@ calculation:
 ```R
 c(CHMFc4 = 7, CHMFc5 = 2, CHMFc12 = 4, SEA = 4, SED = 4, SEE = 2, SEG = 6, SEI = 3, SEL = 4, SEN = 2, SEP = 4, SEQ = 2, SER = 4)
 ```
+
+## UPDATE! 
+> igraph has updated versions to 1.0 and changed the way graphs are plotted. This means that the layout you get with
+> a given seed value will not be the same as in previous version of igraph.
+
+### If your igraph version is < 1.0.0:
+
 - Distance calculation: Bruvo
 - Populations: `9_BB`, `9_FR`
 - Node scale: 1.25
 - Color Palette: `cm.colors`
 - Labels: none
 - Random Seed: 9001
+
+### If your igraph version is >= 1.0.0:
+
+- Distance calculation: Bruvo
+- Populations: `9_BB`, `9_FR`
+- Node scale: 1.45
+- Color Palette: `cm.colors`
+- Labels: none
+- Random Seed: 99
