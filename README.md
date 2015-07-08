@@ -1,12 +1,11 @@
 # Shiny App for minimum spanning networks in poppr
 
-## UPDATE: moved to [poppr](https://github.com/grunwaldlab/poppr/tree/2.0-rc)!
+## UPDATE: moved to [poppr](https://github.com/grunwaldlab/poppr)!
 
 This has been moved to poppr 2.0 and is available by using:
 
 ```R
-devtools::install_github("thibautjombart/adegenet") # requires adegenet 2.0
-devtools::install_github("grunwaldlab/poppr@2.0-rc")
+install.packages("poppr")
 poppr::imsn()
 ```
 
